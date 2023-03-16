@@ -1,16 +1,20 @@
 {
   "name": "check-disk-alert",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "@slack/socket-mode": "^1.3.2",
+    "@slack/web-api": "^6.8.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
+    "dotenv": "^16.0.3",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
+    "node-cron": "^3.0.2",
     "pug": "2.0.0-beta11"
   }
 }

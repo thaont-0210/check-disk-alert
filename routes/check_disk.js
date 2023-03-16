@@ -1,15 +1,14 @@
+require('dotenv').config();
 const url = require('url');
 let response = null;
 const filterResult = '/run/lock';
-const token = 'Aa@123456';
+const token = process.env.TOKEN_FOR_WEB;
 
 var express = require('express');
 var router = express.Router();
 
 const execute = require('../services/command').execute;
 const generateCommandForShow = require('../services/disk').generateCommandForShow;
-// const generateCommandForCheckAlert = require('../services/disk').generateCommandForCheckAlert;
-// const filterResultAlert = require('../services/disk').filterResultAlert;
 
 router.get('/', function(req, res, next) {
     res.statusCode = 200;
@@ -38,14 +37,5 @@ router.get('/', function(req, res, next) {
 function show(stdout) {
     response.end(stdout);
 }
-
-// function alert(stdout) {
-//     let result = filterResultAlert(stdout);
-//     console.log(result);
-// }
-//
-// function checkDisk() {
-//     execute(generateCommandForCheckAlert(), alert);
-// }
 
 module.exports = router;
