@@ -13,7 +13,7 @@ function sendReport(data) {
         const res = await web.chat.postMessage({
             channel: slackChanelId,
             link_names: true,
-            text: 'This is report for disk space.',
+            text: 'Report: disk space usage in ' + env,
             blocks: prepareTextMessageReport(data)
         });
     })();
@@ -27,6 +27,7 @@ function getMentionUsers() {
 
     return mention;
 }
+
 function prepareTextMessageReport(data) {
     let mention = getMentionUsers();
     data = data.split(/(?:\r\n|\r|\n)/g);
@@ -66,7 +67,7 @@ function sendNotify(data) {
         const res = await web.chat.postMessage({
             channel: slackChanelId,
             link_names: true,
-            text: 'This is alert for disk space.',
+            text: 'Alert: disk space usage in ' + env + ' is over!!!',
             blocks: prepareTextMessageNotify(data)
         });
     })();
