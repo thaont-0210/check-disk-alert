@@ -22,6 +22,15 @@ Copy *Bot User OAuth Token* for using later
 
 ## Setting app
 
+### Setting ssh key
+- Add ssh key path
+```
+PRIVATE_KEY_PATH=/home/userabc/.ssh/id_rsa
+```
+
+- Note: this private key of user is running app in current server.
+- To check remote server, need copy public key of this user to `authorized_keys` of user in ssh server
+- 
 ### Setting for a server
 - Make `.env` file
 ```
