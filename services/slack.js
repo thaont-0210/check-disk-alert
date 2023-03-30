@@ -1,26 +1,22 @@
 require('dotenv').config();
 const { WebClient } = require('@slack/web-api');
-const alertAfterOverCome = process.env.ALERT_AFTER_OVERCOME;
-const mentionUsers = process.env.SLACK_MENTION_USERS.split(',');
-const env = process.env.ENV;
 
-function sendReport(data) {
-    const token = process.env.SLACK_TOKEN;
-    const web = new WebClient(token);
-    const slackChanelId = process.env.SLACK_CHANEL_ID;
+function sendReport(data, slackConfig) {
+    const web = new WebClient(slackConfig.slackToken);
 
     (async () => {
         const res = await web.chat.postMessage({
-            channel: slackChanelId,
+            channel: slackConfig.slackChannelId,
             link_names: true,
-            text: 'Report: disk space usage in ' + env,
-            blocks: prepareTextMessageReport(data)
-        });
+            text: 'Report: disk space usage in ' + slackConfig.environment,
+            blocks: prepareTextMessageReport(data, slackConfig)
+        }).catch(e => console.log(e));
     })();
 }
 
-function getMentionUsers() {
+function getMentionUsers(slackConfig) {
     let mention = '';
+    let mentionUsers = slackConfig.slackMentionUsers.split(',');
     for (let i = 0; i < mentionUsers.length; i++) {
         mention += '@' + mentionUsers[i] + ' ';
     }
@@ -28,96 +24,98 @@ function getMentionUsers() {
     return mention;
 }
 
-function prepareTextMessageReport(data) {
-    let mention = getMentionUsers();
+function prepareTextMessageReport(data, slackConfig) {
+    let mention = getMentionUsers(slackConfig);
     data = data.split(/(?:\r\n|\r|\n)/g);
-    let text = mention + " You received this message because you are chosen one to view disk space [in *" + env + "* server]!\n";
-    text += "*Detail*\n";
+    let text = mention + ' You received this message because you are chosen one to view disk space in *' + slackConfig.environment + "* server!\n";
+    text += "*Disk Usage Detail*\n";
     text += '```';
     for (let i = 0; i < data.length; i++) {
         text += data[i] + "\n";
     }
+
     text += '```';
 
     return [
         {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": "This is report for disk space.",
-                "emoji": true
+            'type': 'header',
+            'text': {
+                'type': 'plain_text',
+                'text': 'This is report for disk space in ' + slackConfig.environment,
+                'emoji': true
             }
         },
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": text,
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': text,
             }
         }
     ];
 }
 
-function sendNotify(data) {
-    const token = process.env.SLACK_TOKEN;
-    const web = new WebClient(token);
-    const slackChanelId = process.env.SLACK_CHANEL_ID;
+function sendNotify(data, slackConfig) {
+    const web = new WebClient(slackConfig.slackToken);
 
     (async () => {
         const res = await web.chat.postMessage({
-            channel: slackChanelId,
+            channel: slackConfig.slackChannelId,
             link_names: true,
-            text: 'Alert: disk space usage in ' + env + ' is over!!!',
-            blocks: prepareTextMessageNotify(data)
-        });
+            text: 'Alert: disk space usage in ' + slackConfig.environment + ' is over!!!',
+            blocks: prepareTextMessageNotify(data, slackConfig)
+        }).catch(e => console.log(e));
     })();
 }
 
-function prepareTextMessageNotify(data) {
-    let mention = getMentionUsers();
+function prepareTextMessageNotify(data, slackConfig) {
+    let mention = getMentionUsers(slackConfig);
 
     let fields = [
         {
-            "type": "mrkdwn",
-            "text": "*Filesystem*"
+            'type': 'mrkdwn',
+            'text': '*Filesystem*'
         },
         {
-            "type": "mrkdwn",
-            "text": "*Used*"
+            'type': 'mrkdwn',
+            'text': '*Used*'
         }
     ];
 
-    let maxFields = data.length >= 8 ? 4 : data.length / 2;
-    for (let i = 0; i < maxFields; i++) {
-        fields.push({
-            "type": "plain_text",
-            "text": data[i][0] + '[' + data[i][5] + ']',
-            "emoji": true
-        });
+    let maxFields = 4;
 
-        fields.push({
-            "type": "mrkdwn",
-            "text": data[i][4] + '(' + data[i][2] + '/' + data[i][1] + ')',
-        });
+    for (let i = 0; i < maxFields; i++) {
+        if (data[i] !== undefined) {
+            fields.push({
+                'type': 'plain_text',
+                'text': data[i][0] + '[' + data[i][5] + ']',
+                'emoji': true
+            });
+
+            fields.push({
+                'type': 'mrkdwn',
+                'text': data[i][4] + '(' + data[i][2] + '/' + data[i][1] + ')',
+            });
+        }
     }
 
     return [
         {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": "This is alert for disk space.",
-                "emoji": true
+            'type': 'header',
+            'text': {
+                'type': 'plain_text',
+                'text': 'This is alert for disk space in ' + slackConfig.environment,
+                'emoji': true
             }
         },
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": mention + " You received this message because disk space [in *" + env
-                    + "* server] has been used over " + alertAfterOverCome,
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': mention + ' You received this message because disk usage space in *' + slackConfig.environment
+                    + '* server has been used over ' + slackConfig.diskOverPercent,
             },
-            "fields": fields,
+            'fields': fields,
         }
     ];
 }

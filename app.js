@@ -4,17 +4,12 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var checkDiskRouter = require('./routes/check_disk');
-var checkDiskService = require('./services/disk').checkDisk;
-var reportDiskService = require('./services/disk').report;
-var task = require('./services/schedule').task;
-let scheduleCheckDisk = process.env.SCHEDULE_FOR_CHECK_DISK;
-let scheduleReportDisk = process.env.SCHEDULE_FOR_REPORT_DISK;
+// var indexRouter = require('./routes/index');
+// var usersRouter = require('./routes/users');
+// var checkDiskRouter = require('./routes/check_disk');
+const startJob = require('./services/job').run;
 
-task(checkDiskService, scheduleCheckDisk).start();
-task(reportDiskService, scheduleReportDisk).start();
+startJob();
 
 var app = express();
 
