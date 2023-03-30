@@ -3,9 +3,9 @@ const {NodeSSH} = require('node-ssh')
 
 const ssh = new NodeSSH();
 
-function execute(command, callback) {
+function execute(command, data, callback) {
     exec(command, function(error, stdout, stderr) {
-        callback(stdout);
+        callback(stdout, data.data);
     });
 }
 
@@ -15,23 +15,48 @@ function execute(command, callback) {
 //     privateKeyPath: '/home/thaohihi/.ssh/id_rsa'
 // }
 
-function executeSSH(command, config, callback, cwd = '/var/www') {
-    console.log(config, command);
-    ssh.connect(config).then(function() {
+function executeSSH(command, data, callback, cwd = '/var/www') {
+    ssh.connect(data.configSSH).then(function() {
         ssh.exec(command.cmd, [command.param], {
             cwd: cwd,
             onStdout(chunk) {
-                callback(chunk.toString('utf8'));
-                console.log('==========');
-                console.log(chunk.toString('utf8'));
-                console.log('==========');
                 ssh.dispose();
+                callback(chunk.toString('utf8'), data.data);
+                console.log('disconnect ' +  data.configSSH.host);
             },
             onStderr(chunk) {
                 ssh.dispose();
+                console.log(chunk.toString('utf8'));
+                console.log('disconnect ' +  data.configSSH.host);
             },
-        }).then(r => console.log('done'));
-    }).catch(e => console.log('error in ' + config.host));
+        }).then(r => console.log('execute command done.'));
+    }).catch(e => console.log('error in ' + data.configSSH.host));
 }
 
-module.exports = {execute, executeSSH}
+function multipleExecuteSSH(commands, data, callback, cwd = '/var/www') {
+    let result = [];
+    ssh.connect(data.configSSH).then(function() {
+        let execTimes = commands.length;
+        for (let i = 0; i < commands.length; i++) {
+            ssh.exec(commands[i].cmd, [commands[i].param], {
+                cwd: cwd,
+                onStdout(chunk) {
+                    result[i] = chunk.toString('utf8');
+                    execTimes--;
+
+                    if (execTimes == 0) {
+                        ssh.dispose();
+                        callback(result.join("\n"), data.data);
+                        console.log('disconnect ' +  data.configSSH.host);
+                    }
+                },
+                onStderr(chunk) {
+                    ssh.dispose();
+                    console.log('disconnect ' +  data.configSSH.host);
+                },
+            }).then(r => console.log('execute command done.'));
+        }
+    }).catch(e => console.log('error in ' + data.configSSH.host));
+}
+
+module.exports = {execute, executeSSH, multipleExecuteSSH}
