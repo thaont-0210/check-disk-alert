@@ -1,8 +1,9 @@
 require('dotenv').config();
 const { WebClient } = require('@slack/web-api');
 const alertAfterOverCome = process.env.ALERT_AFTER_OVERCOME;
-const mentionUsers = process.env.SLACK_MENTION_USERS.split(',');
+var mentionUsers = [];
 const env = process.env.ENV;
+var slackConfig = {};
 
 function sendReport(data) {
     const token = process.env.SLACK_TOKEN;
@@ -21,6 +22,7 @@ function sendReport(data) {
 
 function getMentionUsers() {
     let mention = '';
+    mentionUsers = slackConfig.slackMentionUsers.split(',');
     for (let i = 0; i < mentionUsers.length; i++) {
         mention += '@' + mentionUsers[i] + ' ';
     }
@@ -58,16 +60,17 @@ function prepareTextMessageReport(data) {
     ];
 }
 
-function sendNotify(data) {
-    const token = process.env.SLACK_TOKEN;
+function sendNotify(data, sConfig) {
+    const token = sConfig.slackToken;
     const web = new WebClient(token);
-    const slackChanelId = process.env.SLACK_CHANEL_ID;
+    const slackChannelId = sConfig.slackChannelId;
+    slackConfig = sConfig;
 
     (async () => {
         const res = await web.chat.postMessage({
-            channel: slackChanelId,
+            channel: slackChannelId,
             link_names: true,
-            text: 'Alert: disk space usage in ' + env + ' is over!!!',
+            text: 'Alert: disk space usage in ' + slackConfig.environment + ' is over!!!',
             blocks: prepareTextMessageNotify(data)
         });
     })();
@@ -87,18 +90,21 @@ function prepareTextMessageNotify(data) {
         }
     ];
 
-    let maxFields = data.length >= 8 ? 4 : data.length / 2;
-    for (let i = 0; i < maxFields; i++) {
-        fields.push({
-            "type": "plain_text",
-            "text": data[i][0] + '[' + data[i][5] + ']',
-            "emoji": true
-        });
+    let maxFields = 4;
 
-        fields.push({
-            "type": "mrkdwn",
-            "text": data[i][4] + '(' + data[i][2] + '/' + data[i][1] + ')',
-        });
+    for (let i = 0; i < maxFields; i++) {
+        if (data[i] !== undefined) {
+            fields.push({
+                "type": "plain_text",
+                "text": data[i][0] + '[' + data[i][5] + ']',
+                "emoji": true
+            });
+
+            fields.push({
+                "type": "mrkdwn",
+                "text": data[i][4] + '(' + data[i][2] + '/' + data[i][1] + ')',
+            });
+        }
     }
 
     return [
@@ -106,7 +112,7 @@ function prepareTextMessageNotify(data) {
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": "This is alert for disk space.",
+                "text": "This is alert for disk space in " + slackConfig.environment,
                 "emoji": true
             }
         },
@@ -114,8 +120,8 @@ function prepareTextMessageNotify(data) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": mention + " You received this message because disk space [in *" + env
-                    + "* server] has been used over " + alertAfterOverCome,
+                "text": mention + " You received this message because disk space [in *" + slackConfig.environment
+                    + "* server] has been used over " + slackConfig.diskOverPercent,
             },
             "fields": fields,
         }

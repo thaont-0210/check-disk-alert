@@ -1,8 +1,8 @@
 require('dotenv').config();
-const {execute} = require("./command");
+const {execute, executeSSH} = require("./command");
 const sendReport = require("./slack").sendReport;
 const sendNotify = require('./slack').sendNotify;
-const alertAfterOverCome = process.env.ALERT_AFTER_OVERCOME;
+var slackData = {};
 
 function generateCommandForShow(filter) {
     let cmd = '';
@@ -15,8 +15,8 @@ function generateCommandForShow(filter) {
     return cmd;
 }
 
-function generateCommandForCheckAlert() {
-    return `df -h | awk '$5 > "`+ alertAfterOverCome + `"' | { read -r line; sort -k5; }`;
+function generateCommandForCheckAlert(diskOverPercent) {
+    return `df -h | awk '$5 > "${diskOverPercent}"' | { read -r line; sort -k5; }`;
 }
 
 function generateCommandResult(stdout) {
@@ -25,7 +25,7 @@ function generateCommandResult(stdout) {
     let j = 0;
     for (let i = stdout.length - 1; i >= 0; i--) {
         if (stdout[i] != '' && stdout[i] != null) {
-            result[j] = stdout[i].replace(/\s+/g, '-').split('-');
+            result[j] = stdout[i].replace(/\s+/g, '....').split('....');
             j++;
         }
     }
@@ -36,20 +36,48 @@ function generateCommandResult(stdout) {
 function alert(stdout) {
     let result = generateCommandResult(stdout);
     if (result.length > 0) {
-        sendNotify(result);
+        sendNotify(result, slackData);
     }
 }
 
-function sendReportCheckDisk(data) {
-    sendReport(data);
+function sendReportCheckDisk() {
+    // sendReport(data);
+    console.log('report to ' + slackData.environment);
 }
 
-function report() {
+function report(data) {
+    slackData = {
+        environment: data.environment,
+        slackChannelId: data.slackChannelId,
+        slackMentionUsers: data.slackMentionUsers,
+        diskOverPercent: data.diskOverPercent,
+    }
+
     execute(generateCommandForShow(''), sendReportCheckDisk);
 }
 
-function checkDisk() {
-    execute(generateCommandForCheckAlert(), alert);
+function checkDisk(data) {
+    let cmd = generateCommandForCheckAlert(data.diskOverPercent);
+    slackData = {
+        environment: data.environment,
+        slackChannelId: data.slackChannelId,
+        slackMentionUsers: data.slackMentionUsers,
+        slackToken: data.slackToken,
+        diskOverPercent: data.diskOverPercent,
+    }
+
+    if (data.host == null || data.host === '') {
+        execute(cmd, alert);
+    } else {
+        executeSSH({
+            cmd: cmd,
+            param: ''
+        }, {
+            host: data.host,
+            username: data.user,
+            privateKeyPath: data.privateKeyPath
+        }, alert);
+    }
 }
 
 module.exports = {generateCommandForShow, checkDisk, report}
