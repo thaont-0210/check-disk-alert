@@ -1,5 +1,14 @@
 require('dotenv').config();
 const { WebClient } = require('@slack/web-api');
+const moment = require('moment-timezone');
+
+function getCurrentDateTime()
+{
+    let tz = 'Asia/Tokyo';
+    let now = moment().tz(tz).format('YYYY-M-D H:m');
+
+    return `${now} (${tz})`;
+}
 
 function sendMessage(token, channelId, msgTitle, msgContent) {
     const web = new WebClient(token);
@@ -48,6 +57,8 @@ function prepareTextMessageReport(data, environment, mentionUsers) {
     let mention = getMentionUsers(mentionUsers);
     data = data.split(/(?:\r\n|\r|\n)/g);
     let text = `${mention}\nYou received this message because you are chosen one to view disk space in *${environment}* server!\n`;
+    let checkedAt = getCurrentDateTime();
+    text += `Reported at: ${checkedAt}\n`;
     text += "*Disk Usage Detail*\n";
     text += '```';
     for (let i = 0; i < data.length; i++) {
@@ -98,6 +109,9 @@ function sendNotify(data, config) {
 
 function prepareTextMessageNotify(data, environment, diskOverPercent, mentionUsers) {
     let mention = getMentionUsers(mentionUsers);
+    let checkedAt = getCurrentDateTime();
+    let text = `${mention}\nYou received this message because disk usage space in *${environment}* server has been used over ${diskOverPercent}\n`;
+    text += `Checked at: ${checkedAt}\n`;
 
     let fields = [
         {
@@ -140,7 +154,7 @@ function prepareTextMessageNotify(data, environment, diskOverPercent, mentionUse
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': `${mention}\nYou received this message because disk usage space in *${environment}* server has been used over ${diskOverPercent}`,
+                'text': text,
             },
             'fields': fields,
         }
