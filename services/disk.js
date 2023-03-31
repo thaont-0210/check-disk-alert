@@ -63,6 +63,7 @@ function report(data) {
             configSSH: {
                 host: data.host,
                 username: data.user,
+                password: data.password,
                 privateKeyPath: data.privateKeyPath
             },
             data: slackData
@@ -90,6 +91,7 @@ function checkDisk(data) {
             configSSH: {
                 host: data.host,
                 username: data.user,
+                password: data.password,
                 privateKeyPath: data.privateKeyPath
             },
             data: slackData

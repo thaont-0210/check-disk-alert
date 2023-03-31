@@ -12,8 +12,11 @@ function execute(command, data, callback) {
 // let config = {
 //     host: '100.100.100.100',
 //     username: 'nguyen.the.thao',
-//     privateKeyPath: '/home/thaohihi/.ssh/id_rsa'
+//     password: 'xxxxxx',
+//     privateKeyPath: '/home/thaohihi/.ssh/id_rsa',
 // }
+
+// only need an authenticate method: password or private key
 
 function executeSSH(command, data, callback, cwd = '/var/www') {
     ssh.connect(data.configSSH).then(function() {
@@ -29,8 +32,9 @@ function executeSSH(command, data, callback, cwd = '/var/www') {
                 console.log(chunk.toString('utf8'));
                 console.log('disconnect ' +  data.configSSH.host);
             },
-        }).then(r => console.log('execute command done.'));
-    }).catch(e => console.log('error in ' + data.configSSH.host));
+        }).then(r => console.log('execute command done.'))
+        .catch(e => console.log('got error'));
+    }).catch(e => console.log('error in ' + data.configSSH.host, e, data));
 }
 
 function multipleExecuteSSH(commands, data, callback, cwd = '/var/www') {
@@ -54,9 +58,10 @@ function multipleExecuteSSH(commands, data, callback, cwd = '/var/www') {
                     ssh.dispose();
                     console.log('disconnect ' +  data.configSSH.host);
                 },
-            }).then(r => console.log('execute command done.'));
+            }).then(r => console.log('execute command done.'))
+            .catch(e => console.log('got error'));
         }
-    }).catch(e => console.log('error in ' + data.configSSH.host));
+    }).catch(e => console.log('error in ' + data.configSSH.host, e, data));
 }
 
 module.exports = {execute, executeSSH, multipleExecuteSSH}

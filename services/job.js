@@ -20,7 +20,8 @@ function run() {
                 diskOverPercent: process.env[`ALERT_AFTER_OVERCOME_${i}`],
                 host: process.env[`HOST_${i}`],
                 user: process.env[`USER_${i}`],
-                privateKeyPath: process.env.PRIVATE_KEY_PATH,
+                password: process.env[`PASSWORD_${i}`] ? process.env[`PASSWORD_${i}`] : '',
+                privateKeyPath: process.env.PRIVATE_KEY_PATH ? process.env.PRIVATE_KEY_PATH : null,
             }
 
             task(checkDiskService, data, process.env[`SCHEDULE_FOR_CHECK_DISK_${i}`]).start();

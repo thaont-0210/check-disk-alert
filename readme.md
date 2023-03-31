@@ -60,9 +60,13 @@ SCHEDULE_FOR_REPORT_DISK_1=0 */6 * * * #At minute 0 past every 6th hour
 ```
 
 - Host information, if null => check current server
+
+Fill `PASSWORD_1` by authenticate password string to ssh, if you don't want to use authenticate by private key.
+
 ```
 HOST_1=100.0.100.100
 USER_1=nguyen.the.thao
+PASSWORD_1=xxx
 ```
 
 ### Setting for multiple servers
@@ -78,4 +82,5 @@ SCHEDULE_FOR_CHECK_DISK_2=* * * * *
 SCHEDULE_FOR_REPORT_DISK_2=* * * * *
 HOST_2=
 USER_2=
+PASSWORD_2=
 ```
