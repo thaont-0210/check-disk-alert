@@ -46,7 +46,7 @@ function sendReportCheckDisk(data, slackData) {
 function report(data) {
     let slackData = {
         environment: data.environment,
-        slackChannelId: data.slackChannelId,
+        slackChannelIds: data.slackChannelIds,
         slackMentionUsers: data.slackMentionUsers,
         slackToken: data.slackToken,
         diskOverPercent: data.diskOverPercent,
@@ -75,7 +75,7 @@ function checkDisk(data) {
     let cmd = generateCommandForCheckAlert(data.diskOverPercent);
     let slackData = {
         environment: data.environment,
-        slackChannelId: data.slackChannelId,
+        slackChannelIds: data.slackChannelIds,
         slackMentionUsers: data.slackMentionUsers,
         slackToken: data.slackToken,
         diskOverPercent: data.diskOverPercent,

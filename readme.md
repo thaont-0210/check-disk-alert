@@ -48,6 +48,16 @@ SLACK_MENTION_USERS_1=nguyen.the.thao,haha.hihi
 SLACK_TOKEN_1=xoxb-xxxxx
 ```
 
+If you want to send message to more channel, each channel will mention some others, we do:
+```
+SLACK_CHANNEL_ID_1=C04U1xxx1,C04U1xxx2,C04U1xxx3
+SLACK_MENTION_USERS_1=nguyen.the.thao,haha.hihi;channel;here
+SLACK_TOKEN_1=xoxb-xxxxx
+```
+
+That mean, message will be sent to 3 channels, in channel `C04U1xxx1` mention `nguyen.the.thao` and `haha.hihi` user. In channel `C04U1xxx2` mention `@channel`, and channel `C04U1xxx3` mention `@here`.
+If mention users are not defined for channnel 2 or 3, we will use mention users in first channel.
+
 - If some disks are used over this setting, alert will be sent
 ```
 ALERT_AFTER_OVERCOME_1=50%

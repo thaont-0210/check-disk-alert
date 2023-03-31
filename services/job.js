@@ -14,8 +14,8 @@ function run() {
         } else {
             let data = {
                 environment: env,
-                slackChannelId: process.env[`SLACK_CHANNEL_ID_${i}`],
-                slackMentionUsers: process.env[`SLACK_MENTION_USERS_${i}`],
+                slackChannelIds: process.env[`SLACK_CHANNEL_ID_${i}`].split(','),
+                slackMentionUsers: process.env[`SLACK_MENTION_USERS_${i}`].split(';'),
                 slackToken: process.env[`SLACK_TOKEN_${i}`],
                 diskOverPercent: process.env[`ALERT_AFTER_OVERCOME_${i}`],
                 host: process.env[`HOST_${i}`],
