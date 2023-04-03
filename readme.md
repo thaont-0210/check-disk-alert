@@ -60,7 +60,7 @@ If mention users are not defined for channnel 2 or 3, we will use mention users 
 
 - If some disks are used over this setting, alert will be sent
 ```
-ALERT_AFTER_OVERCOME_1=50%
+ALERT_AFTER_OVERCOME_1=50
 ```
 
 - Schedule for check / report disk, using input temple like [crontab](https://crontab.guru/)
@@ -87,7 +87,7 @@ ENV_2=dev-local
 SLACK_CHANNEL_ID_2=C04U1xxxx
 SLACK_MENTION_USERS_2=nguyen.the.thao,haha.hihi
 SLACK_TOKEN_2=xoxb-xxxxx
-ALERT_AFTER_OVERCOME_2=60%
+ALERT_AFTER_OVERCOME_2=60
 SCHEDULE_FOR_CHECK_DISK_2=* * * * *
 SCHEDULE_FOR_REPORT_DISK_2=* * * * *
 HOST_2=

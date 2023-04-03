@@ -33,7 +33,7 @@ function executeSSH(command, data, callback, cwd = '/var/www') {
                 console.log('disconnect ' +  data.configSSH.host);
             },
         }).then(r => console.log('execute command done.'))
-        .catch(e => console.log('got error'));
+        .catch(e => console.log('got error', e));
     }).catch(e => console.log('error in ' + data.configSSH.host, e, data));
 }
 
@@ -59,7 +59,7 @@ function multipleExecuteSSH(commands, data, callback, cwd = '/var/www') {
                     console.log('disconnect ' +  data.configSSH.host);
                 },
             }).then(r => console.log('execute command done.'))
-            .catch(e => console.log('got error'));
+            .catch(e => console.log('got error', e));
         }
     }).catch(e => console.log('error in ' + data.configSSH.host, e, data));
 }

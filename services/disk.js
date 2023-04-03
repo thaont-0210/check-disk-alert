@@ -15,7 +15,7 @@ function generateCommandForShow(filter) {
 }
 
 function generateCommandForCheckAlert(diskOverPercent) {
-    return `df -h | awk '$5 > "${diskOverPercent}"' | { read -r line; sort -k5; }`;
+    return `df -Ph | awk '+$5 >= ${diskOverPercent}' | sort -k 5,5`;
 }
 
 function generateCommandResult(stdout) {

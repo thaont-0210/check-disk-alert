@@ -34,12 +34,14 @@ function sendReport(data, config) {
             mentionUsers = config.slackMentionUsers[i];
         }
 
-        sendMessage(
-            config.slackToken,
-            config.slackChannelIds[i],
-            `Report: disk space usage in ${config.environment} server`,
-            prepareTextMessageReport(data, config.environment, mentionUsers)
-        );
+        if (config.slackChannelIds[i] != null && config.slackChannelIds[i] != '') {
+            sendMessage(
+                config.slackToken,
+                config.slackChannelIds[i],
+                `Report: disk space usage in ${config.environment} server`,
+                prepareTextMessageReport(data, config.environment, mentionUsers)
+            );
+        }
     }
 }
 
@@ -58,7 +60,7 @@ function prepareTextMessageReport(data, environment, mentionUsers) {
     data = data.split(/(?:\r\n|\r|\n)/g);
 
     let text = `${mention}\nYou received this message because you are chosen one to view disk space in *${environment}* server!\n`;
-    text += `*${environment}*サーバーのディスク容量を確認できるように、このメッセージが配信されました！\n`;
+    text += `*${environment}* サーバーのディスク容量を確認できるように、このメッセージが配信されました！\n`;
 
     let checkedAt = getCurrentDateTime();
     text += `Reported at: ${checkedAt}\n`;
@@ -73,8 +75,8 @@ function prepareTextMessageReport(data, environment, mentionUsers) {
 
     text += '```';
 
-    let txtTile = `This is report for disk space in ${environment} server\n`;
-    txtTile += `${environment}のディスク容量についてのレポートです。`;
+    let txtTitle = `This is report for disk space in ${environment} server\n`;
+    txtTitle += `${environment}のディスク容量についてのレポートです。`;
 
     return [
         {
@@ -107,20 +109,22 @@ function sendNotify(data, config) {
             mentionUsers = config.slackMentionUsers[i];
         }
 
-        sendMessage(
-            config.slackToken,
-            config.slackChannelIds[i],
-            `Alert: disk space usage in ${config.environment} server is over!!!`,
-            prepareTextMessageNotify(data, config.environment, config.diskOverPercent, mentionUsers)
-        );
+        if (config.slackChannelIds[i] != null && config.slackChannelIds[i] != '') {
+            sendMessage(
+                config.slackToken,
+                config.slackChannelIds[i],
+                `Alert: disk space usage in ${config.environment} server is over!!!`,
+                prepareTextMessageNotify(data, config.environment, config.diskOverPercent, mentionUsers)
+            );
+        }
     }
 }
 
 function prepareTextMessageNotify(data, environment, diskOverPercent, mentionUsers) {
     let mention = getMentionUsers(mentionUsers);
     let checkedAt = getCurrentDateTime();
-    let text = `${mention}\nYou received this message because disk usage space in *${environment}* server has been used over *${diskOverPercent}*\n`;
-    text += `*${environment}*サーバーのディスク使用容量が*${diskOverPercent}*を超えたため、このメッセージが配信されました。\n`;
+    let text = `${mention}\nYou received this message because disk usage space in *${environment}* server has been used over *${diskOverPercent}%*\n`;
+    text += `*${environment}* サーバーのディスク使用容量が *${diskOverPercent}%* を超えたため、このメッセージが配信されました。\n`;
     text += `Checked at: ${checkedAt}\n`;
 
     let fields = [

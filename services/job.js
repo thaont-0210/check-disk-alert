@@ -12,20 +12,29 @@ function run() {
         if (env == null || env === 'undefined') {
             fetchEnv = false;
         } else {
+            let overPercent = parseInt(process.env[`ALERT_AFTER_OVERCOME_${i}`]);
+            let scheduleForChecking = process.env[`SCHEDULE_FOR_CHECK_DISK_${i}`];
+            let scheduleForReporting = process.env[`SCHEDULE_FOR_REPORT_DISK_${i}`];
+
             let data = {
                 environment: env,
                 slackChannelIds: process.env[`SLACK_CHANNEL_ID_${i}`].split(','),
                 slackMentionUsers: process.env[`SLACK_MENTION_USERS_${i}`].split(';'),
                 slackToken: process.env[`SLACK_TOKEN_${i}`],
-                diskOverPercent: process.env[`ALERT_AFTER_OVERCOME_${i}`],
+                diskOverPercent: overPercent,
                 host: process.env[`HOST_${i}`],
                 user: process.env[`USER_${i}`],
                 password: process.env[`PASSWORD_${i}`] ? process.env[`PASSWORD_${i}`] : '',
                 privateKeyPath: process.env.PRIVATE_KEY_PATH ? process.env.PRIVATE_KEY_PATH : null,
             }
 
-            task(checkDiskService, data, process.env[`SCHEDULE_FOR_CHECK_DISK_${i}`]).start();
-            task(reportDiskService, data, process.env[`SCHEDULE_FOR_REPORT_DISK_${i}`]).start();
+            if (!isNaN(overPercent) && scheduleForChecking != null && scheduleForChecking != '') {
+                task(checkDiskService, data, scheduleForChecking).start();
+            }
+
+            if (scheduleForReporting != null && scheduleForReporting != '') {
+                task(reportDiskService, data, scheduleForReporting).start();
+            }
         }
     }
 }
