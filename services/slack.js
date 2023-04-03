@@ -56,10 +56,16 @@ function getMentionUsers(mentionUsers) {
 function prepareTextMessageReport(data, environment, mentionUsers) {
     let mention = getMentionUsers(mentionUsers);
     data = data.split(/(?:\r\n|\r|\n)/g);
+
     let text = `${mention}\nYou received this message because you are chosen one to view disk space in *${environment}* server!\n`;
+    text += `*${environment}*サーバーのディスク容量を確認できるように、このメッセージが配信されました！\n`;
+
     let checkedAt = getCurrentDateTime();
     text += `Reported at: ${checkedAt}\n`;
+
     text += "*Disk Usage Detail*\n";
+    text += "*ディスク使用量の詳細*\n";
+
     text += '```';
     for (let i = 0; i < data.length; i++) {
         text += data[i] + "\n";
@@ -67,12 +73,15 @@ function prepareTextMessageReport(data, environment, mentionUsers) {
 
     text += '```';
 
+    let txtTile = `This is report for disk space in ${environment} server\n`;
+    txtTile += `${environment}のディスク容量についてのレポートです。`;
+
     return [
         {
             'type': 'header',
             'text': {
                 'type': 'plain_text',
-                'text': `This is report for disk space in ${environment} server`,
+                'text': txtTitle,
                 'emoji': true
             }
         },
@@ -110,7 +119,8 @@ function sendNotify(data, config) {
 function prepareTextMessageNotify(data, environment, diskOverPercent, mentionUsers) {
     let mention = getMentionUsers(mentionUsers);
     let checkedAt = getCurrentDateTime();
-    let text = `${mention}\nYou received this message because disk usage space in *${environment}* server has been used over ${diskOverPercent}\n`;
+    let text = `${mention}\nYou received this message because disk usage space in *${environment}* server has been used over *${diskOverPercent}*\n`;
+    text += `*${environment}*サーバーのディスク使用容量が*${diskOverPercent}*を超えたため、このメッセージが配信されました。\n`;
     text += `Checked at: ${checkedAt}\n`;
 
     let fields = [
@@ -141,12 +151,15 @@ function prepareTextMessageNotify(data, environment, diskOverPercent, mentionUse
         }
     }
 
+    let txtTitle = `This is alert for disk space in ${environment} server\n`;
+    txtTitle += `${environment}のディスク容量についてのアラートです。`;
+
     return [
         {
             'type': 'header',
             'text': {
                 'type': 'plain_text',
-                'text': `This is alert for disk space in ${environment} server`,
+                'text': txtTitle,
                 'emoji': true
             }
         },
