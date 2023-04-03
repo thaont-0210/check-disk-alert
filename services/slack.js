@@ -7,7 +7,10 @@ function getCurrentDateTime()
     let tz = 'Asia/Tokyo';
     let now = moment().tz(tz).format('YYYY-M-D H:m');
 
-    return `${now} (${tz})`;
+    return {
+        'en': `${now} (${tz})`,
+        'jp': `${now}（アジア/東京）`
+    };
 }
 
 function sendMessage(token, channelId, msgTitle, msgContent) {
@@ -65,8 +68,9 @@ function prepareTextMessageReport(data, environment, mentionUsers) {
     let text = `${mention}\nYou received this message because you are chosen one to view disk space in *${environment}* server!\n`;
     text += `*${environment}* サーバーのディスク容量を確認できるように、このメッセージが配信されました！\n`;
 
-    let checkedAt = getCurrentDateTime();
-    text += `Reported at: ${checkedAt}\n`;
+    let reportedAt = getCurrentDateTime();
+    text += `Reported at: ${reportedAt.en}\n`;
+    text += `報告時点：${reportedAt.jp}\n`;
 
     text += "*Disk Usage Detail*\n";
     text += "*ディスク使用量の詳細*\n";
@@ -78,8 +82,8 @@ function prepareTextMessageReport(data, environment, mentionUsers) {
 
     text += '```';
 
-    let txtTitle = `This is report for disk space in ${environment} server\n`;
-    txtTitle += `${environment}のディスク容量についてのレポートです。`;
+    let txtTitle = `:spin-1: This is report for disk space in ${environment} server :spin-1: \n`;
+    txtTitle += `:spin-1: ${environment}のディスク容量についてのレポート :spin-1:`;
 
     return [
         {
@@ -126,9 +130,11 @@ function sendNotify(data, config) {
 function prepareTextMessageNotify(data, environment, diskOverPercent, mentionUsers) {
     let mention = getMentionUsers(mentionUsers);
     let checkedAt = getCurrentDateTime();
+
     let text = `${mention}\nYou received this message because disk usage space in *${environment}* server has been used over *${diskOverPercent}%*\n`;
     text += `*${environment}* サーバーのディスク使用容量が *${diskOverPercent}%* を超えたため、このメッセージが配信されました。\n`;
-    text += `Checked at: ${checkedAt}\n`;
+    text += `Checked at: ${checkedAt.en}\n`;
+    text += `確認時点: ${checkedAt.jp}\n`;
 
     let fields = [
         {
@@ -158,8 +164,8 @@ function prepareTextMessageNotify(data, environment, diskOverPercent, mentionUse
         }
     }
 
-    let txtTitle = `This is alert for disk space in ${environment} server\n`;
-    txtTitle += `${environment}のディスク容量についてのアラートです。`;
+    let txtTitle = `:alert_party: This is alert for disk space in ${environment} server :alert_party: \n`;
+    txtTitle += `:alert_party: ${environment}のディスク容量についてのアラート :alert_party:`;
 
     return [
         {
