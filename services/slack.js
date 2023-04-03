@@ -48,8 +48,11 @@ function sendReport(data, config) {
 function getMentionUsers(mentionUsers) {
     let mention = '';
     mentionUsers = mentionUsers.split(',');
+
     for (let i = 0; i < mentionUsers.length; i++) {
-        mention += `@${mentionUsers[i]} `;
+        if (mentionUsers[i] != null && mentionUsers[i] != '') {
+            mention += `@${mentionUsers[i]} `;
+        }
     }
 
     return mention;
