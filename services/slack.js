@@ -82,7 +82,7 @@ function prepareTextMessageReport(data, environment, mentionUsers) {
 
     text += '```';
 
-    let txtTitle = `:spin-1: This is report for disk space in ${environment} server :spin-1: \n`;
+    let txtTitle = `:spin-1: Report ${environment} usage disk space :spin-1: \n`;
     txtTitle += `:spin-1: ${environment}のディスク容量についてのレポート :spin-1:`;
 
     return [
@@ -164,7 +164,7 @@ function prepareTextMessageNotify(data, environment, diskOverPercent, mentionUse
         }
     }
 
-    let txtTitle = `:alert_party: This is alert for disk space in ${environment} server :alert_party: \n`;
+    let txtTitle = `:alert_party: Alert ${environment} disk space :alert_party: \n`;
     txtTitle += `:alert_party: ${environment}のディスク容量についてのアラート :alert_party:`;
 
     return [
