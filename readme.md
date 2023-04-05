@@ -65,7 +65,12 @@ ALERT_AFTER_OVERCOME_1=50
 
 - If you don't want to check some disks, add this
 ```
-EXCLUDED_DISK_2=tmp/or/somethingelse
+EXCLUDED_DISK_1=tmp/or/somethingelse
+```
+
+- If you want run command in docker, add this
+```
+DOCKER_CONTAINER_NAME_1=container_name_xxx
 ```
 
 - Schedule for check / report disk, using input temple like [crontab](https://crontab.guru/)

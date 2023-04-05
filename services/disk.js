@@ -14,8 +14,14 @@ function generateCommandForShow(filter) {
     return cmd;
 }
 
-function generateCommandForCheckAlert(diskOverPercent, excluded = '') {
-    let cmd = `df -h | awk 'NR == 1 || +$5 >= ${diskOverPercent}'`;
+function generateCommandForCheckAlert(diskOverPercent, dockerContainerName = '', excluded = '') {
+    let cmd = '';
+    if (dockerContainerName != '' && dockerContainerName != null) {
+        cmd += `docker exec ${dockerContainerName} `;
+    }
+
+    cmd += `df -h | awk 'NR == 1 || +$5 >= ${diskOverPercent}'`;
+
     if (excluded != '' && excluded != null) {
         cmd += ` | grep -v "${excluded}"`;
     }
@@ -61,11 +67,17 @@ function report(data) {
     if (data.host == null || data.host === '') {
         execute(generateCommandForShow(''), {data: slackData}, sendReportCheckDisk);
     } else {
-        let cmd = [
-            {cmd: 'df', param: '-h'},
-            {cmd: 'df', param: '-i'},
-        ];
-        multipleExecuteSSH(cmd, {
+        let dfCmd = '';
+        if (data.dockerContainerName != '' && data.dockerContainerName != null) {
+            dfCmd = `docker exec ${data.dockerContainerName} `;
+        }
+
+        dfCmd += 'df';
+
+        multipleExecuteSSH([
+            {cmd: dfCmd, param: '-h'},
+            {cmd: dfCmd, param: '-i'},
+        ], {
             configSSH: {
                 host: data.host,
                 username: data.user,
@@ -78,7 +90,7 @@ function report(data) {
 }
 
 function checkDisk(data) {
-    let cmd = generateCommandForCheckAlert(data.diskOverPercent, data.excludedDiskCmd);
+    let cmd = generateCommandForCheckAlert(data.diskOverPercent, data.dockerContainerName, data.excludedDiskCmd);
     let slackData = {
         environment: data.environment,
         slackChannelIds: data.slackChannelIds,

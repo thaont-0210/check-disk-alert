@@ -23,6 +23,7 @@ function run() {
                 slackToken: process.env[`SLACK_TOKEN_${i}`],
                 diskOverPercent: overPercent,
                 excludedDiskCmd: process.env[`EXCLUDED_DISK_${i}`],
+                dockerContainerName: process.env[`DOCKER_CONTAINER_NAME_${i}`],
                 host: process.env[`HOST_${i}`],
                 user: process.env[`USER_${i}`],
                 password: process.env[`PASSWORD_${i}`] ? process.env[`PASSWORD_${i}`] : '',
