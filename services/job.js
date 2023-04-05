@@ -1,5 +1,5 @@
 const checkDiskService = require('./disk').checkDisk;
-const reportDiskService = require('./disk').report;
+const reportDiskService = require('./disk').reportDisk;
 const task = require('./schedule').task;
 require('dotenv').config();
 

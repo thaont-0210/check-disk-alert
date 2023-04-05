@@ -44,7 +44,7 @@ function generateCommandResult(stdout) {
 }
 
 function alert(stdout, slackData) {
-    let result = stdout.split(/(?:\r\n|\r|\n)/g);
+    let result = stdout.split(/(?:\r\n|\r|\n)/g).filter(item => item);
     // because result containe header of command stdout
     if (result.length > 1) {
         sendNotify(result, slackData);
@@ -53,6 +53,45 @@ function alert(stdout, slackData) {
 
 function sendReportCheckDisk(data, slackData) {
     sendReport(data, slackData);
+}
+
+function shouldReportOrNot(stdout, data) {
+    let result = stdout.split(/(?:\r\n|\r|\n)/g).filter(item => item);
+    if (result.length > 1) {
+        console.log(result);
+        console.log('alert is set');
+    } else {
+        report(data);
+    }
+}
+
+function reportDisk(data) {
+    let slackData = {
+        environment: data.environment,
+        slackChannelIds: data.slackChannelIds,
+        slackMentionUsers: data.slackMentionUsers,
+        slackToken: data.slackToken,
+        diskOverPercent: data.diskOverPercent,
+    }
+
+    if (data.host == null || data.host === '') {
+        // execute(generateCommandForShow(''), {data: slackData}, sendReportCheckDisk);
+        // TO-DO
+    } else {
+        let cmd = generateCommandForCheckAlert(data.diskOverPercent, data.dockerContainerName, data.excludedDiskCmd);
+        executeSSH({
+            cmd: cmd,
+            param: ''
+        }, {
+            configSSH: {
+                host: data.host,
+                username: data.user,
+                password: data.password,
+                privateKeyPath: data.privateKeyPath
+            },
+            data: data
+        }, shouldReportOrNot);
+    }
 }
 
 function report(data) {
@@ -117,4 +156,4 @@ function checkDisk(data) {
     }
 }
 
-module.exports = {generateCommandForShow, checkDisk, report}
+module.exports = {generateCommandForShow, checkDisk, reportDisk}
