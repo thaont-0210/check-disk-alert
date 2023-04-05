@@ -14,8 +14,13 @@ function generateCommandForShow(filter) {
     return cmd;
 }
 
-function generateCommandForCheckAlert(diskOverPercent) {
-    return `df -Ph | awk '+$5 >= ${diskOverPercent}' | sort -k 5,5`;
+function generateCommandForCheckAlert(diskOverPercent, excluded = '') {
+    let cmd = `df -h | awk 'NR == 1 || +$5 >= ${diskOverPercent}'`;
+    if (excluded != '' && excluded != null) {
+        cmd += ` | grep -v "${excluded}"`;
+    }
+
+    return cmd;
 }
 
 function generateCommandResult(stdout) {
@@ -33,8 +38,9 @@ function generateCommandResult(stdout) {
 }
 
 function alert(stdout, slackData) {
-    let result = generateCommandResult(stdout);
-    if (result.length > 0) {
+    let result = stdout.split(/(?:\r\n|\r|\n)/g);
+    // because result containe header of command stdout
+    if (result.length > 1) {
         sendNotify(result, slackData);
     }
 }
@@ -72,7 +78,7 @@ function report(data) {
 }
 
 function checkDisk(data) {
-    let cmd = generateCommandForCheckAlert(data.diskOverPercent);
+    let cmd = generateCommandForCheckAlert(data.diskOverPercent, data.excludedDiskCmd);
     let slackData = {
         environment: data.environment,
         slackChannelIds: data.slackChannelIds,

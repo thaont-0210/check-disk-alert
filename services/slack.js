@@ -5,7 +5,7 @@ const moment = require('moment-timezone');
 function getCurrentDateTime()
 {
     let tz = 'Asia/Tokyo';
-    let now = moment().tz(tz).format('YYYY-M-D H:m');
+    let now = moment().tz(tz).format('YYYY-MM-DD HH:mm');
 
     return {
         'en': `${now} (${tz})`,
@@ -41,8 +41,8 @@ function sendReport(data, config) {
             sendMessage(
                 config.slackToken,
                 config.slackChannelIds[i],
-                `Report: disk space usage in ${config.environment} server`,
-                prepareTextMessageReport(data, config.environment, mentionUsers)
+                `Report: disk space usage in ${config.environment} server.`,
+                prepareTextMessageReport(data, config.environment, config.diskOverPercent, mentionUsers)
             );
         }
     }
@@ -61,29 +61,32 @@ function getMentionUsers(mentionUsers) {
     return mention;
 }
 
-function prepareTextMessageReport(data, environment, mentionUsers) {
+function prepareTextMessageReport(data, environment, diskOverPercent, mentionUsers) {
+    let txtTitle = `Daily Disk usage report / 日次ディスク使用用量のレポート`;
+
     let mention = getMentionUsers(mentionUsers);
     data = data.split(/(?:\r\n|\r|\n)/g);
 
-    let text = `${mention}\nYou received this message because you are chosen one to view disk space in *${environment}* server!\n`;
-    text += `*${environment}* サーバーのディスク容量を確認できるように、このメッセージが配信されました！\n`;
+    let text = mention != '' ? `${mention}\n` : '';
+    text += "• Server: `" + environment + "`\n";
+    text += "• State: `OK`\n";
+    text += "• Alert threshold / アラートの閾値: `" + diskOverPercent + "%`\n";
 
     let reportedAt = getCurrentDateTime();
-    text += `Reported at: ${reportedAt.en}\n`;
-    text += `報告時点：${reportedAt.jp}\n`;
+    text += `• Reported at / 報告時点: ${reportedAt.en}\n\n`;
 
-    text += "*Disk Usage Detail*\n";
-    text += "*ディスク使用量の詳細*\n";
+    text += `*Disk Usage Detail / ィスク使用量の詳細*\n`;
 
     text += '```';
     for (let i = 0; i < data.length; i++) {
-        text += data[i] + "\n";
+        if (i == data.length - 1) {
+            text += data[i];
+        } else {
+            text += data[i] + "\n";
+        }
     }
 
     text += '```';
-
-    let txtTitle = `:spin-1: Report ${environment} usage disk space :spin-1: \n`;
-    txtTitle += `:spin-1: ${environment}のディスク容量についてのレポート :spin-1:`;
 
     return [
         {
@@ -100,7 +103,7 @@ function prepareTextMessageReport(data, environment, mentionUsers) {
                 'type': 'mrkdwn',
                 'text': text,
             }
-        }
+        },
     ];
 }
 
@@ -128,44 +131,29 @@ function sendNotify(data, config) {
 }
 
 function prepareTextMessageNotify(data, environment, diskOverPercent, mentionUsers) {
+    let txtTitle = `:fire: High Disk usage alert / ディスク使用率が高いアラート`;
+
     let mention = getMentionUsers(mentionUsers);
-    let checkedAt = getCurrentDateTime();
 
-    let text = `${mention}\nYou received this message because disk usage space in *${environment}* server has been used over *${diskOverPercent}%*\n`;
-    text += `*${environment}* サーバーのディスク使用容量が *${diskOverPercent}%* を超えたため、このメッセージが配信されました。\n`;
-    text += `Checked at: ${checkedAt.en}\n`;
-    text += `確認時点: ${checkedAt.jp}\n`;
+    let text = `${mention}\n`;
+    text += "• Server: `" + environment + "`\n";
+    text += "• State: `Storage warning`\n";
+    text += "• Alert threshold / アラートの閾値: `" + diskOverPercent + "%`\n";
 
-    let fields = [
-        {
-            'type': 'mrkdwn',
-            'text': '*Filesystem*'
-        },
-        {
-            'type': 'mrkdwn',
-            'text': '*Used*'
-        }
-    ];
+    let reportedAt = getCurrentDateTime();
+    text += `• Reported at / 報告時点: ${reportedAt.en}\n`;
 
-    let maxFields = 4;
-
-    for (let i = 0; i < maxFields; i++) {
-        if (data[i] !== undefined) {
-            fields.push({
-                'type': 'plain_text',
-                'text': `${data[i][0]}[${data[i][5]}]`,
-                'emoji': true
-            });
-
-            fields.push({
-                'type': 'mrkdwn',
-                'text': `${data[i][4]}(${data[i][2]}/${data[i][1]})`,
-            });
+    text += '```';
+    for (let i = 0; i < data.length; i++) {
+        if (i == data.length -1) {
+            text += data[i];
+        } else {
+            text += data[i] + "\n";
         }
     }
 
-    let txtTitle = `:alert_party: Alert ${environment} disk space :alert_party: \n`;
-    txtTitle += `:alert_party: ${environment}のディスク容量についてのアラート :alert_party:`;
+    text += '```';
+
 
     return [
         {
@@ -181,8 +169,7 @@ function prepareTextMessageNotify(data, environment, diskOverPercent, mentionUse
             'text': {
                 'type': 'mrkdwn',
                 'text': text,
-            },
-            'fields': fields,
+            }
         }
     ];
 }

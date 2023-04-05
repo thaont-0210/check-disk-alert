@@ -63,6 +63,11 @@ If mention users are not defined for channnel 2 or 3, we will use mention users 
 ALERT_AFTER_OVERCOME_1=50
 ```
 
+- If you don't want to check some disks, add this
+```
+EXCLUDED_DISK_2=tmp/or/somethingelse
+```
+
 - Schedule for check / report disk, using input temple like [crontab](https://crontab.guru/)
 ```
 SCHEDULE_FOR_CHECK_DISK_1=*/30 * * * * #At every 30th minute
