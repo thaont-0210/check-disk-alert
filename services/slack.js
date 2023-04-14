@@ -75,7 +75,7 @@ function prepareTextMessageReport(data, environment, diskOverPercent, mentionUse
     let reportedAt = getCurrentDateTime();
     text += `• Reported at / 報告時点: ${reportedAt.en}\n\n`;
 
-    text += `*Disk Usage Detail / ィスク使用量の詳細*\n`;
+    text += `*Disk Usage Detail / ディスク使用量の詳細*\n`;
 
     text += '```';
     for (let i = 0; i < data.length; i++) {
