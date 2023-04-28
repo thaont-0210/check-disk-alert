@@ -18,7 +18,7 @@ function execute(command, data, callback) {
 
 // only need an authenticate method: password or private key
 
-function executeSSH(command, data, callback, cwd = '/var/www') {
+function executeSSH(command, data, callback, cwd = '/var/www', retry = 2) {
     ssh.connect(data.configSSH).then(function() {
         ssh.exec(command.cmd, [command.param], {
             cwd: cwd,
@@ -34,10 +34,17 @@ function executeSSH(command, data, callback, cwd = '/var/www') {
             },
         }).then(r => console.log('execute command done.'))
         .catch(e => console.log('got error', e));
-    }).catch(e => console.log('error in ' + data.configSSH.host, e, data));
+    }).catch(function (e) {
+        console.log('error in ' + data.configSSH.host, e, data);
+        if (retry > 0) {
+            console.log('retry executeSSH remaining: ' + retry);
+            retry--;
+            executeSSH(command, data, callback, cwd, retry);
+        }
+    });
 }
 
-function multipleExecuteSSH(commands, data, callback, cwd = '/var/www') {
+function multipleExecuteSSH(commands, data, callback, cwd = '/var/www', retry = 2) {
     let result = [];
     ssh.connect(data.configSSH).then(function() {
         let execTimes = commands.length;
@@ -61,7 +68,14 @@ function multipleExecuteSSH(commands, data, callback, cwd = '/var/www') {
             }).then(r => console.log('execute command done.'))
             .catch(e => console.log('got error', e));
         }
-    }).catch(e => console.log('error in ' + data.configSSH.host, e, data));
+    }).catch(function (e) {
+        console.log('error in ' + data.configSSH.host, e, data);
+        if (retry > 0) {
+            console.log('retry multipleExecuteSSH remaining: ' + retry);
+            retry--;
+            multipleExecuteSSH(command, data, callback, cwd, retry);
+        }
+    });
 }
 
 module.exports = {execute, executeSSH, multipleExecuteSSH}

@@ -5,11 +5,11 @@ function task(callback, data, schedule) {
         schedule = '* * * * *';
     }
 
-    console.log('start job for ' + data.environment);
+    console.log('start job for ' + data.environment + ' and calling ' + callback.name);
 
     return cron.schedule(schedule, () =>  {
         callback(data);
-        console.log('done job for ' + data.environment);
+        console.log('done job for ' + data.environment + ' and calling ' + callback.name);
     }, {
         scheduled: false
     });
