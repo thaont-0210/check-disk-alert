@@ -3,10 +3,12 @@ const {execute, executeSSH, multipleExecuteSSH} = require('./command');
 const sendReport = require('./slack').sendReport;
 const sendNotify = require('./slack').sendNotify;
 
-function generateCommandForShow(filter) {
+function generateCommandForShow(filter, excluded = '') {
     let cmd = '';
-    if (filter != '') {
+    if (filter !== '') {
         cmd = 'df -h | grep "' + filter + '\\|Mounted on" && printf "\n" && df -i | grep "' + filter + '\\|Mounted on"';
+    } else if (excluded !== '') {
+        cmd = `df -h | grep -v '${excluded}' && printf "\n" && df -i | grep -v '${excluded}'`;
     } else {
         cmd = 'df -h && printf "\n" && df -i';
     }
@@ -16,13 +18,13 @@ function generateCommandForShow(filter) {
 
 function generateCommandForCheckAlert(diskOverPercent, dockerContainerName = '', excluded = '') {
     let cmd = '';
-    if (dockerContainerName != '' && dockerContainerName != null) {
+    if (dockerContainerName !== '' && dockerContainerName != null) {
         cmd += `docker exec ${dockerContainerName} `;
     }
 
     cmd += `df -h | awk 'NR == 1 || +$5 >= ${diskOverPercent}'`;
 
-    if (excluded != '' && excluded != null) {
+    if (excluded !== '' && excluded != null) {
         cmd += ` | grep -v "${excluded}"`;
     }
 
@@ -34,7 +36,7 @@ function generateCommandResult(stdout) {
     let result = [];
     let j = 0;
     for (let i = stdout.length - 1; i >= 0; i--) {
-        if (stdout[i] != '' && stdout[i] != null) {
+        if (stdout[i] !== '' && stdout[i] != null) {
             result[j] = stdout[i].replace(/\s+/g, '....').split('....');
             j++;
         }
@@ -45,7 +47,7 @@ function generateCommandResult(stdout) {
 
 function alert(stdout, slackData) {
     let result = stdout.split(/(?:\r\n|\r|\n)/g).filter(item => item);
-    // because result containe header of command stdout
+    // because result container header of command stdout
     if (result.length > 1) {
         sendNotify(result, slackData);
     }
@@ -72,10 +74,11 @@ function reportDisk(data) {
         slackMentionUsers: data.slackMentionUsers,
         slackToken: data.slackToken,
         diskOverPercent: data.diskOverPercent,
+        excludedDiskCmd: data.excludedDiskCmd,
     }
 
     if (data.host == null || data.host === '') {
-        // execute(generateCommandForShow(''), {data: slackData}, sendReportCheckDisk);
+        execute(generateCommandForCheckAlert(data.diskOverPercent, data.dockerContainerName, data.excludedDiskCmd), {data: slackData}, shouldReportOrNot);
         // TO-DO
     } else {
         let cmd = generateCommandForCheckAlert(data.diskOverPercent, data.dockerContainerName, data.excludedDiskCmd);
@@ -104,18 +107,26 @@ function report(data) {
     }
 
     if (data.host == null || data.host === '') {
-        execute(generateCommandForShow(''), {data: slackData}, sendReportCheckDisk);
+        execute(generateCommandForShow('', data.excludedDiskCmd), {data: slackData}, sendReportCheckDisk);
     } else {
         let dfCmd = '';
-        if (data.dockerContainerName != '' && data.dockerContainerName != null) {
+        if (data.dockerContainerName !== '' && data.dockerContainerName != null) {
             dfCmd = `docker exec ${data.dockerContainerName} `;
         }
 
         dfCmd += 'df';
 
+        let dfCmdH = `${dfCmd} -h`;
+        let dfCmdI = `${dfCmd} -i`;
+
+        if (data.excludedDiskCmd !== '' && data.excludedDiskCmd != null) {
+            dfCmdH += ` | grep -v '${data.excludedDiskCmd}'`;
+            dfCmdI += ` | grep -v '${data.excludedDiskCmd}'`;
+        }
+
         multipleExecuteSSH([
-            {cmd: dfCmd, param: '-h'},
-            {cmd: dfCmd, param: '-i'},
+            {cmd: dfCmdH, param: ''},
+            {cmd: dfCmdI, param: ''},
         ], {
             configSSH: {
                 host: data.host,

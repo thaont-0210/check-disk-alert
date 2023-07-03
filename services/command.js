@@ -55,7 +55,7 @@ function multipleExecuteSSH(commands, data, callback, cwd = '/var/www', retry = 
                     result[i] = chunk.toString('utf8');
                     execTimes--;
 
-                    if (execTimes == 0) {
+                    if (execTimes === 0) {
                         ssh.dispose();
                         callback(result.join("\n"), data.data);
                         console.log('disconnect ' +  data.configSSH.host);
